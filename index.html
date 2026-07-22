@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>익명 제보함</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#223354;
+    --ink-soft:#4a5b7a;
+    --paper:#FBF8F2;
+    --board:#E7DFCC;
+    --board-dot: rgba(34,51,84,0.06);
+    --teal:#3F8E82;
+    --teal-dark:#2d6a60;
+    --ochre:#D9A441;
+    --stamp-red:#C1443B;
+    --cat-class:#F5D77E;
+    --cat-facility:#A8C7D8;
+    --cat-peer:#D9A8C7;
+    --cat-etc:#B8C9A0;
+    --shadow: 0 10px 30px rgba(34,51,84,0.16);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    font-family:'Noto Sans KR', sans-serif;
+    color:var(--ink);
+    background-color:var(--board);
+    background-image:
+      radial-gradient(var(--board-dot) 1.4px, transparent 1.4px);
+    background-size: 18px 18px;
+    display:flex;
+    justify-content:center;
+    padding: 28px 14px 60px;
+  }
+  .app{ width:100%; max-width:480px; }
+
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+  }
+  .brand{
+    font-family:'Gaegu', cursive;
+    font-weight:700;
+    font-size:30px;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .brand .dot{
+    width:10px;height:10px;border-radius:50%;
+    background:var(--teal);
+    display:inline-block;
+  }
+  .mode-link{
+    background:none;border:none;
+    font-family:'Noto Sans KR';
+    font-size:13px;
+    color:var(--ink-soft);
+    text-decoration:underline;
+    cursor:pointer;
+    padding:6px 4px;
+  }
+  .mode-link:hover{ color:var(--ink); }
+
+  .card{
+    background:var(--paper);
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    padding:26px 22px 22px;
+    position:relative;
+  }
+  .subtitle{
+    font-size:14px;
+    color:var(--ink-soft);
+    margin:-6px 0 20px;
+    line-height:1.5;
+  }
+
+  /* ---- slot mailbox visual ---- */
+  .slot-wrap{
+    display:flex; justify-content:center; margin-bottom:22px;
+  }
+  .slot{
+    width:150px; height:26px;
+    background: linear-gradient(180deg, #cfd9db, #b7c4c7);
+    border-radius:14px;
+    position:relative;
+    box-shadow: inset 0 3px 6px rgba(0,0,0,0.25);
+  }
+  .slot::after{
+    content:"";
+    position:absolute; left:50%; top:50%;
+    transform:translate(-50%,-50%);
+    width:100px; height:6px;
+    background:#223354;
+    border-radius:3px;
+    opacity:0.55;
+  }
+
+  /* ---- category tabs (sticky notes) ---- */
+  .cat-label{
+    font-size:13px; font-weight:700; color:var(--ink-soft);
+    margin-bottom:8px;
+  }
+  .cats{
+    display:grid; grid-template-columns:1fr 1fr; gap:8px;
+    margin-bottom:18px;
+  }
+  .cat-btn{
+    border:2px solid transparent;
+    border-radius:10px;
+    padding:10px 8px;
+    font-family:'Noto Sans KR';
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    text-align:center;
+    color:var(--ink);
+    transform:rotate(var(--r,0deg));
+    transition:transform .15s ease, border-color .15s ease;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+  }
+  .cat-btn:nth-child(1){ background:var(--cat-class); --r:-1.2deg; }
+  .cat-btn:nth-child(2){ background:var(--cat-facility); --r:0.8deg; }
+  .cat-btn:nth-child(3){ background:var(--cat-peer); --r:-0.6deg; }
+  .cat-btn:nth-child(4){ background:var(--cat-etc); --r:1.1deg; }
+  .cat-btn.selected{
+    border-color:var(--ink);
+    transform:rotate(0deg) scale(1.04);
+  }
+
+  textarea{
+    width:100%;
+    min-height:130px;
+    border:2px solid #e3dcc9;
+    background:#fffdf8;
+    border-radius:12px;
+    padding:14px;
+    font-family:'Noto Sans KR';
+    font-size:15px;
+    line-height:1.6;
+    color:var(--ink);
+    resize:vertical;
+    outline:none;
+  }
+  textarea:focus{ border-color:var(--teal); }
+
+  .helper-row{
+    display:flex; justify-content:space-between; align-items:center;
+    margin:8px 0 18px;
+    font-size:12px; color:#8a8474;
+  }
+
+  .submit-btn{
+    width:100%;
+    background:var(--teal);
+    color:#fff;
+    border:none;
+    border-radius:12px;
+    padding:14px;
+    font-family:'Noto Sans KR';
+    font-weight:700;
+    font-size:16px;
+    cursor:pointer;
+    box-shadow: 0 4px 0 var(--teal-dark);
+    transition: transform .05s ease;
+  }
+  .submit-btn:active{ transform:translateY(2px); box-shadow:0 2px 0 var(--teal-dark); }
+  .submit-btn:disabled{ opacity:0.6; cursor:default; }
+
+  /* ---- flying note animation ---- */
+  .flying-note{
+    position:absolute;
+    left:50%; top:120px;
+    width:120px; height:80px;
+    background:#fffdf8;
+    border:1px solid #e3dcc9;
+    border-radius:6px;
+    box-shadow:0 6px 14px rgba(0,0,0,0.15);
+    transform:translate(-50%,0) scale(1);
+    pointer-events:none;
+    opacity:0;
+  }
+  .flying-note.go{
+    animation: dropIn 0.9s cubic-bezier(.5,0,.7,1) forwards;
+  }
+  @keyframes dropIn{
+    0%{ opacity:1; transform:translate(-50%,0) scale(1) rotate(0deg); }
+    70%{ opacity:1; transform:translate(-50%,-96px) scale(0.5) rotate(6deg); }
+    100%{ opacity:0; transform:translate(-50%,-104px) scale(0.15) rotate(10deg); }
+  }
+
+  .stamp-wrap{
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    padding:30px 10px 10px;
+  }
+  .stamp-wrap.show{ display:flex; }
+  .stamp{
+    width:120px; height:120px;
+    border:5px solid var(--stamp-red);
+    border-radius:50%;
+    color:var(--stamp-red);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Gaegu', cursive;
+    font-weight:700;
+    font-size:22px;
+    transform:rotate(-10deg) scale(0.5);
+    opacity:0;
+    animation: stampIn .5s ease-out .15s forwards;
+  }
+  @keyframes stampIn{
+    to{ transform:rotate(-10deg) scale(1); opacity:1; }
+  }
+  .stamp-msg{
+    margin-top:16px;
+    font-size:14px;
+    color:var(--ink-soft);
+    line-height:1.6;
+  }
+  .again-btn{
+    margin-top:18px;
+    background:none;
+    border:2px solid var(--ink);
+    color:var(--ink);
+    border-radius:10px;
+    padding:10px 18px;
+    font-family:'Noto Sans KR';
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+  }
+
+  /* ---- admin ---- */
+  .lock-icon{ font-size:34px; text-align:center; margin-bottom:6px; }
+  .field-label{ font-size:13px; font-weight:700; color:var(--ink-soft); margin:14px 0 6px; }
+  input[type=password], input[type=text]{
+    width:100%;
+    border:2px solid #e3dcc9;
+    background:#fffdf8;
+    border-radius:10px;
+    padding:12px 14px;
+    font-size:15px;
+    outline:none;
+    font-family:'Noto Sans KR';
+  }
+  input[type=password]:focus, input[type=text]:focus{ border-color:var(--teal); }
+  .err{ color:var(--stamp-red); font-size:13px; margin-top:8px; min-height:18px; }
+
+  .board-toolbar{
+    display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;
+  }
+  .chip{
+    border:1.5px solid #d8d0ba; background:#fff;
+    border-radius:999px; padding:6px 12px;
+    font-size:12.5px; font-weight:700; color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .chip.active{ background:var(--ink); color:#fff; border-color:var(--ink); }
+
+  .note-card{
+    background:#fffdf5;
+    border-radius:10px;
+    padding:16px 14px 14px;
+    margin-bottom:14px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    position:relative;
+  }
+  .pin{
+    width:14px; height:14px; border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, #ff8b7a, var(--stamp-red));
+    position:absolute; left:50%; top:-7px; transform:translateX(-50%);
+    box-shadow:0 2px 3px rgba(0,0,0,0.3);
+  }
+  .note-tag{
+    display:inline-block;
+    font-size:11.5px; font-weight:700;
+    padding:3px 9px; border-radius:999px;
+    margin-bottom:8px;
+  }
+  .note-tag.수업{ background:var(--cat-class); }
+  .note-tag.시설{ background:var(--cat-facility); }
+  .note-tag.교우관계{ background:var(--cat-peer); }
+  .note-tag.기타{ background:var(--cat-etc); }
+  .note-text{ font-size:14.5px; line-height:1.6; white-space:pre-wrap; }
+  .note-time{ font-size:11.5px; color:#9a927c; margin-top:8px; }
+
+  .empty{
+    text-align:center; color:var(--ink-soft); font-size:14px;
+    padding:40px 10px; line-height:1.7;
+  }
+
+  .admin-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .small-link{ background:none;border:none; font-size:12.5px; color:var(--ink-soft); text-decoration:underline; cursor:pointer; }
+
+  .toast{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
+    background:var(--ink); color:#fff; padding:10px 18px; border-radius:999px;
+    font-size:13px; opacity:0; pointer-events:none; transition:opacity .25s ease;
+  }
+  .toast.show{ opacity:1; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span>익명 제보함</div>
+    <button class="mode-link" id="modeToggle">관리자 화면</button>
+  </div>
+
+  <!-- 학생용 화면 -->
+  <div class="card" id="studentView">
+    <div class="subtitle">이름은 남지 않아요. 편하게, 솔직하게 적어주세요.</div>
+
+    <div id="formArea">
+      <div class="slot-wrap"><div class="slot"></div></div>
+
+      <div class="cat-label">어떤 이야기인가요?</div>
+      <div class="cats" id="cats">
+        <button class="cat-btn" data-cat="수업">📚 수업</button>
+        <button class="cat-btn" data-cat="시설">🏫 시설</button>
+        <button class="cat-btn" data-cat="교우관계">🧑‍🤝‍🧑 교우관계</button>
+        <button class="cat-btn" data-cat="기타">✏️ 기타</button>
+      </div>
+
+      <textarea id="noteText" maxlength="400" placeholder="여기에 편하게 적어주세요..."></textarea>
+      <div class="helper-row">
+        <span>건설적인 의견일수록 더 잘 반영돼요 🙂</span>
+        <span id="charCount">0/400</span>
+      </div>
+
+      <button class="submit-btn" id="submitBtn">쪽지 보내기</button>
+      <div class="flying-note" id="flyingNote"></div>
+    </div>
+
+    <div class="stamp-wrap" id="stampWrap">
+      <div class="stamp">접수<br>완료</div>
+      <div class="stamp-msg">쪽지가 잘 도착했어요.<br>말해줘서 고마워요.</div>
+      <button class="again-btn" id="againBtn">제보 하나 더 남기기</button>
+    </div>
+  </div>
+
+  <!-- 관리자 로그인 화면 -->
+  <div class="card" id="lockView" style="display:none;">
+    <div class="lock-icon">🔒</div>
+    <div class="subtitle" style="text-align:center; margin-top:0;">원장님만 들어올 수 있어요</div>
+    <div class="field-label">비밀번호</div>
+    <input type="password" id="pwInput" placeholder="비밀번호를 입력하세요">
+    <div class="err" id="pwErr"></div>
+    <button class="submit-btn" id="pwSubmit" style="margin-top:14px;">확인</button>
+    <div style="text-align:center; margin-top:14px;">
+      <button class="small-link" id="backToStudent">← 학생 화면으로 돌아가기</button>
+    </div>
+  </div>
+
+  <!-- 관리자 게시판 화면 -->
+  <div class="card" id="adminView" style="display:none;">
+    <div class="admin-header">
+      <div class="subtitle" style="margin:0;">도착한 쪽지들</div>
+      <button class="small-link" id="logoutBtn">잠그기</button>
+    </div>
+    <div class="board-toolbar" id="filterChips">
+      <button class="chip active" data-filter="전체">전체</button>
+      <button class="chip" data-filter="수업">수업</button>
+      <button class="chip" data-filter="시설">시설</button>
+      <button class="chip" data-filter="교우관계">교우관계</button>
+      <button class="chip" data-filter="기타">기타</button>
+    </div>
+    <div id="boardList"></div>
+    <div style="text-align:center; margin-top:10px;">
+      <button class="small-link" id="changePwBtn">비밀번호 바꾸기</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const FALLBACK_PW = "1234";
+let selectedCat = null;
+let submissions = [];
+let currentFilter = "전체";
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+// ---------- 학생 화면 ----------
+document.querySelectorAll('.cat-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedCat = btn.dataset.cat;
+  });
+});
+
+const noteText = document.getElementById('noteText');
+noteText.addEventListener('input', ()=>{
+  document.getElementById('charCount').textContent = noteText.value.length + '/400';
+});
+
+document.getElementById('submitBtn').addEventListener('click', async ()=>{
+  const text = noteText.value.trim();
+  if(!selectedCat){ showToast('먼저 카테고리를 골라주세요'); return; }
+  if(!text){ showToast('내용을 적어주세요'); return; }
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+
+  const fly = document.getElementById('flyingNote');
+  fly.classList.add('go');
+
+  try{
+    const existing = await safeGet('submissions', true);
+    const arr = existing ? JSON.parse(existing.value) : [];
+    arr.unshift({
+      id: Date.now() + '-' + Math.random().toString(36).slice(2,7),
+      cat: selectedCat,
+      text: text,
+      ts: new Date().toISOString()
+    });
+    await window.storage.set('submissions', JSON.stringify(arr), true);
+  }catch(e){
+    console.error('저장 실패', e);
+  }
+
+  setTimeout(()=>{
+    document.getElementById('formArea').style.display = 'none';
+    document.getElementById('stampWrap').classList.add('show');
+  }, 700);
+});
+
+document.getElementById('againBtn').addEventListener('click', ()=>{
+  noteText.value = '';
+  document.getElementById('charCount').textContent = '0/400';
+  selectedCat = null;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('flyingNote').classList.remove('go');
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('stampWrap').classList.remove('show');
+  document.getElementById('formArea').style.display = 'block';
+});
+
+// ---------- 화면 전환 ----------
+function goStudent(){
+  document.getElementById('studentView').style.display = 'block';
+  document.getElementById('lockView').style.display = 'none';
+  document.getElementById('adminView').style.display = 'none';
+  document.getElementById('modeToggle').style.display = 'inline';
+}
+function goLock(){
+  document.getElementById('studentView').style.display = 'none';
+  document.getElementById('lockView').style.display = 'block';
+  document.getElementById('adminView').style.display = 'none';
+  document.getElementById('modeToggle').style.display = 'none';
+  document.getElementById('pwInput').value = '';
+  document.getElementById('pwErr').textContent = '';
+}
+async function goAdmin(){
+  document.getElementById('studentView').style.display = 'none';
+  document.getElementById('lockView').style.display = 'none';
+  document.getElementById('adminView').style.display = 'block';
+  document.getElementById('modeToggle').style.display = 'none';
+  await loadBoard();
+}
+
+document.getElementById('modeToggle').addEventListener('click', goLock);
+document.getElementById('backToStudent').addEventListener('click', goStudent);
+document.getElementById('logoutBtn').addEventListener('click', goStudent);
+
+// ---------- storage 헬퍼 ----------
+async function safeGet(key, shared){
+  try{
+    const r = await window.storage.get(key, shared);
+    return r;
+  }catch(e){
+    return null;
+  }
+}
+
+// ---------- 비밀번호 확인 ----------
+document.getElementById('pwSubmit').addEventListener('click', async ()=>{
+  const input = document.getElementById('pwInput').value;
+  const stored = await safeGet('admin-password', true);
+  const realPw = stored ? stored.value : FALLBACK_PW;
+  if(input === realPw){
+    goAdmin();
+  }else{
+    document.getElementById('pwErr').textContent = '비밀번호가 맞지 않아요';
+  }
+});
+document.getElementById('pwInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') document.getElementById('pwSubmit').click();
+});
+
+// ---------- 비밀번호 변경 ----------
+document.getElementById('changePwBtn').addEventListener('click', async ()=>{
+  const cur = prompt('현재 비밀번호를 입력하세요');
+  if(cur === null) return;
+  const stored = await safeGet('admin-password', true);
+  const realPw = stored ? stored.value : FALLBACK_PW;
+  if(cur !== realPw){ alert('현재 비밀번호가 맞지 않아요'); return; }
+  const next = prompt('새 비밀번호를 입력하세요 (4자 이상 권장)');
+  if(!next) return;
+  await window.storage.set('admin-password', next, true);
+  alert('비밀번호가 바뀌었어요');
+});
+
+// ---------- 게시판 렌더 ----------
+document.getElementById('filterChips').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.chip');
+  if(!btn) return;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.filter;
+  renderBoard();
+});
+
+async function loadBoard(){
+  const stored = await safeGet('submissions', true);
+  submissions = stored ? JSON.parse(stored.value) : [];
+  renderBoard();
+}
+
+function formatTime(iso){
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function renderBoard(){
+  const list = document.getElementById('boardList');
+  const filtered = currentFilter === '전체' ? submissions : submissions.filter(s=>s.cat===currentFilter);
+  if(filtered.length === 0){
+    list.innerHTML = `<div class="empty">아직 도착한 쪽지가 없어요.<br>QR코드를 스캔하면 여기로 모여요.</div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(s => `
+    <div class="note-card">
+      <div class="pin"></div>
+      <span class="note-tag ${s.cat}">${s.cat}</span>
+      <div class="note-text"></div>
+      <div class="note-time">${formatTime(s.ts)}</div>
+    </div>
+  `).join('');
+  // 텍스트는 XSS 방지를 위해 textContent로 안전하게 주입
+  const cards = list.querySelectorAll('.note-card');
+  filtered.forEach((s, i)=>{
+    cards[i].querySelector('.note-text').textContent = s.text;
+  });
+}
+
+goStudent();
+</script>
+</body>
+</html>
