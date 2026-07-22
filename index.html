@@ -411,10 +411,27 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const FALLBACK_PW = "1234";
+// ⚠️ 배포한 Apps Script 웹 앱 URL을 여기에 붙여넣으세요
+const APPS_SCRIPT_URL = "여기에_배포된_웹앱_URL을_붙여넣으세요";
+
 let selectedCat = null;
 let submissions = [];
 let currentFilter = "전체";
+let adminPw = ""; // 로그인 성공 시 세션 동안만 기억 (저장하지 않음)
+
+function urlReady(){
+  return APPS_SCRIPT_URL && APPS_SCRIPT_URL.startsWith("http");
+}
+
+async function apiPost(payload){
+  const res = await fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
+  return res.json();
+}
+async function apiGet(params){
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(`${APPS_SCRIPT_URL}?${qs}`);
+  return res.json();
+}
 
 function showToast(msg){
   const t = document.getElementById('toast');
@@ -441,6 +458,7 @@ document.getElementById('submitBtn').addEventListener('click', async ()=>{
   const text = noteText.value.trim();
   if(!selectedCat){ showToast('먼저 카테고리를 골라주세요'); return; }
   if(!text){ showToast('내용을 적어주세요'); return; }
+  if(!urlReady()){ showToast('관리자에게 문의: 저장소 URL 미설정'); return; }
 
   const submitBtn = document.getElementById('submitBtn');
   submitBtn.disabled = true;
@@ -449,17 +467,13 @@ document.getElementById('submitBtn').addEventListener('click', async ()=>{
   fly.classList.add('go');
 
   try{
-    const existing = await safeGet('submissions', true);
-    const arr = existing ? JSON.parse(existing.value) : [];
-    arr.unshift({
-      id: Date.now() + '-' + Math.random().toString(36).slice(2,7),
-      cat: selectedCat,
-      text: text,
-      ts: new Date().toISOString()
-    });
-    await window.storage.set('submissions', JSON.stringify(arr), true);
+    await apiPost({ cat: selectedCat, text: text });
   }catch(e){
     console.error('저장 실패', e);
+    showToast('전송에 실패했어요. 다시 시도해주세요');
+    submitBtn.disabled = false;
+    fly.classList.remove('go');
+    return;
   }
 
   setTimeout(()=>{
@@ -504,28 +518,26 @@ async function goAdmin(){
 
 document.getElementById('modeToggle').addEventListener('click', goLock);
 document.getElementById('backToStudent').addEventListener('click', goStudent);
-document.getElementById('logoutBtn').addEventListener('click', goStudent);
-
-// ---------- storage 헬퍼 ----------
-async function safeGet(key, shared){
-  try{
-    const r = await window.storage.get(key, shared);
-    return r;
-  }catch(e){
-    return null;
-  }
-}
+document.getElementById('logoutBtn').addEventListener('click', ()=>{ adminPw=""; goStudent(); });
 
 // ---------- 비밀번호 확인 ----------
 document.getElementById('pwSubmit').addEventListener('click', async ()=>{
+  if(!urlReady()){ document.getElementById('pwErr').textContent = '저장소 URL이 설정되지 않았어요'; return; }
   const input = document.getElementById('pwInput').value;
-  const stored = await safeGet('admin-password', true);
-  const realPw = stored ? stored.value : FALLBACK_PW;
-  if(input === realPw){
-    goAdmin();
-  }else{
-    document.getElementById('pwErr').textContent = '비밀번호가 맞지 않아요';
+  const btn = document.getElementById('pwSubmit');
+  btn.disabled = true;
+  try{
+    const result = await apiGet({ action: 'checkPassword', pw: input });
+    if(result.ok){
+      adminPw = input;
+      goAdmin();
+    }else{
+      document.getElementById('pwErr').textContent = '비밀번호가 맞지 않아요';
+    }
+  }catch(e){
+    document.getElementById('pwErr').textContent = '서버에 연결할 수 없어요';
   }
+  btn.disabled = false;
 });
 document.getElementById('pwInput').addEventListener('keydown', (e)=>{
   if(e.key === 'Enter') document.getElementById('pwSubmit').click();
@@ -533,15 +545,19 @@ document.getElementById('pwInput').addEventListener('keydown', (e)=>{
 
 // ---------- 비밀번호 변경 ----------
 document.getElementById('changePwBtn').addEventListener('click', async ()=>{
-  const cur = prompt('현재 비밀번호를 입력하세요');
-  if(cur === null) return;
-  const stored = await safeGet('admin-password', true);
-  const realPw = stored ? stored.value : FALLBACK_PW;
-  if(cur !== realPw){ alert('현재 비밀번호가 맞지 않아요'); return; }
   const next = prompt('새 비밀번호를 입력하세요 (4자 이상 권장)');
   if(!next) return;
-  await window.storage.set('admin-password', next, true);
-  alert('비밀번호가 바뀌었어요');
+  try{
+    const result = await apiGet({ action: 'setPassword', oldPw: adminPw, newPw: next });
+    if(result.ok){
+      adminPw = next;
+      alert('비밀번호가 바뀌었어요');
+    }else{
+      alert('변경에 실패했어요. 다시 로그인 후 시도해주세요');
+    }
+  }catch(e){
+    alert('서버에 연결할 수 없어요');
+  }
 });
 
 // ---------- 게시판 렌더 ----------
@@ -555,13 +571,20 @@ document.getElementById('filterChips').addEventListener('click', (e)=>{
 });
 
 async function loadBoard(){
-  const stored = await safeGet('submissions', true);
-  submissions = stored ? JSON.parse(stored.value) : [];
+  document.getElementById('boardList').innerHTML = `<div class="empty">불러오는 중...</div>`;
+  try{
+    const result = await apiGet({ action: 'list', pw: adminPw });
+    submissions = result.data || [];
+  }catch(e){
+    document.getElementById('boardList').innerHTML = `<div class="empty">불러오지 못했어요.<br>잠시 후 다시 시도해주세요.</div>`;
+    return;
+  }
   renderBoard();
 }
 
 function formatTime(iso){
   const d = new Date(iso);
+  if(isNaN(d)) return iso;
   const pad = n => String(n).padStart(2,'0');
   return `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
