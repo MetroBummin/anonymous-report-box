@@ -21,6 +21,15 @@
     --cat-facility:#A8C7D8;
     --cat-peer:#D9A8C7;
     --cat-etc:#B8C9A0;
+    /* 상태 색상 */
+    --st-none:#8f99a8;      /* 접수안됨 - 회색 */
+    --st-discuss:#D9A441;   /* 논의중 - 노랑 */
+    --st-reject:#C1443B;    /* 반려 - 빨강 */
+    --st-approve:#3F8E82;   /* 승인 - 초록 */
+    --st-none-bg:#f2f3f5;
+    --st-discuss-bg:#fbf3df;
+    --st-reject-bg:#faeae8;
+    --st-approve-bg:#e8f3f1;
     --shadow: 0 10px 30px rgba(34,51,84,0.16);
   }
   *{box-sizing:border-box;}
@@ -30,55 +39,32 @@
     font-family:'Noto Sans KR', sans-serif;
     color:var(--ink);
     background-color:var(--board);
-    background-image:
-      radial-gradient(var(--board-dot) 1.4px, transparent 1.4px);
+    background-image: radial-gradient(var(--board-dot) 1.4px, transparent 1.4px);
     background-size: 18px 18px;
     display:flex;
     justify-content:center;
     padding: clamp(16px, 4vw, 40px) 14px 60px;
   }
   .app{ width:100%; max-width:480px; transition:max-width .2s ease; }
-
-  /* 태블릿: 폼은 적당히 넓히고, 관리자 게시판은 2열 그리드로 */
-  @media (min-width: 700px){
-    .app{ max-width:600px; }
-  }
-  /* 데스크톱 폭이 넓은 화면: 좀 더 여유있게 */
-  @media (min-width: 1000px){
-    .app{ max-width:680px; }
-  }
+  @media (min-width: 700px){ .app{ max-width:600px; } }
+  @media (min-width: 1000px){ .app{ max-width:680px; } }
 
   .topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    margin-bottom:18px;
-    flex-wrap:wrap;
+    display:flex; justify-content:space-between; align-items:center;
+    gap:10px; margin-bottom:18px; flex-wrap:wrap;
   }
   .brand{
-    font-family:'Gaegu', cursive;
-    font-weight:700;
+    font-family:'Gaegu', cursive; font-weight:700;
     font-size:clamp(22px, 5.5vw, 32px);
     color:var(--ink);
-    display:flex;
-    align-items:center;
-    gap:8px;
-    line-height:1.2;
+    display:flex; align-items:center; gap:8px; line-height:1.2;
   }
-  .brand .dot{
-    width:10px;height:10px;border-radius:50%;
-    background:var(--teal);
-    display:inline-block;
-  }
+  .brand .dot{ width:10px;height:10px;border-radius:50%; background:var(--teal); display:inline-block; }
   .mode-link{
     background:none;border:none;
-    font-family:'Noto Sans KR';
-    font-size:13px;
-    color:var(--ink-soft);
-    text-decoration:underline;
-    cursor:pointer;
-    padding:6px 4px;
+    font-family:'Noto Sans KR'; font-size:13px;
+    color:var(--ink-soft); text-decoration:underline;
+    cursor:pointer; padding:6px 4px;
   }
   .mode-link:hover{ color:var(--ink); }
 
@@ -96,10 +82,47 @@
     line-height:1.5;
   }
 
-  /* ---- slot mailbox visual ---- */
-  .slot-wrap{
-    display:flex; justify-content:center; margin-bottom:22px;
+  /* ---- 현황 통계 바 ---- */
+  .stats-bar{
+    display:flex; flex-wrap:wrap; gap:6px;
+    margin-bottom:16px;
   }
+  .stat-pill{
+    display:inline-flex; align-items:center; gap:5px;
+    border-radius:999px;
+    padding:5px 11px;
+    font-size:12px; font-weight:700;
+    background:#fff;
+    border:1.5px solid #e3dcc9;
+    color:var(--ink-soft);
+  }
+  .stat-pill .sdot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .stat-pill .num{ font-size:13px; color:var(--ink); }
+  .stat-pill.total{ background:var(--ink); border-color:var(--ink); color:#fff; }
+  .stat-pill.total .num{ color:#fff; }
+  .sdot.접수안됨{ background:var(--st-none); }
+  .sdot.논의중{ background:var(--st-discuss); }
+  .sdot.반려{ background:var(--st-reject); }
+  .sdot.승인{ background:var(--st-approve); }
+
+  /* ---- 학생 탭 ---- */
+  .student-tabs{
+    display:flex; gap:6px; margin-bottom:18px;
+  }
+  .stab{
+    flex:1;
+    border:2px solid #e3dcc9;
+    background:#fff;
+    border-radius:10px;
+    padding:10px 6px;
+    font-family:'Noto Sans KR'; font-weight:700; font-size:14px;
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .stab.active{ background:var(--teal); border-color:var(--teal); color:#fff; }
+
+  /* ---- slot mailbox visual ---- */
+  .slot-wrap{ display:flex; justify-content:center; margin-bottom:22px; }
   .slot{
     width:150px; height:26px;
     background: linear-gradient(180deg, #cfd9db, #b7c4c7);
@@ -112,33 +135,19 @@
     position:absolute; left:50%; top:50%;
     transform:translate(-50%,-50%);
     width:100px; height:6px;
-    background:#223354;
-    border-radius:3px;
-    opacity:0.55;
+    background:#223354; border-radius:3px; opacity:0.55;
   }
 
   /* ---- category tabs (sticky notes) ---- */
-  .cat-label{
-    font-size:13px; font-weight:700; color:var(--ink-soft);
-    margin-bottom:8px;
-  }
-  .cats{
-    display:grid; grid-template-columns:1fr 1fr; gap:8px;
-    margin-bottom:18px;
-  }
-  @media (min-width: 560px){
-    .cats{ grid-template-columns: repeat(4, 1fr); }
-  }
+  .cat-label{ font-size:13px; font-weight:700; color:var(--ink-soft); margin-bottom:8px; }
+  .cats{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:18px; }
+  @media (min-width: 560px){ .cats{ grid-template-columns: repeat(4, 1fr); } }
   .cat-btn{
     border:2px solid transparent;
     border-radius:10px;
     padding:10px 8px;
-    font-family:'Noto Sans KR';
-    font-weight:700;
-    font-size:14px;
-    cursor:pointer;
-    text-align:center;
-    color:var(--ink);
+    font-family:'Noto Sans KR'; font-weight:700; font-size:14px;
+    cursor:pointer; text-align:center; color:var(--ink);
     transform:rotate(var(--r,0deg));
     transition:transform .15s ease, border-color .15s ease;
     box-shadow: 0 3px 0 rgba(0,0,0,0.08);
@@ -147,10 +156,7 @@
   .cat-btn:nth-child(2){ background:var(--cat-facility); --r:0.8deg; }
   .cat-btn:nth-child(3){ background:var(--cat-peer); --r:-0.6deg; }
   .cat-btn:nth-child(4){ background:var(--cat-etc); --r:1.1deg; }
-  .cat-btn.selected{
-    border-color:var(--ink);
-    transform:rotate(0deg) scale(1.04);
-  }
+  .cat-btn.selected{ border-color:var(--ink); transform:rotate(0deg) scale(1.04); }
 
   textarea{
     width:100%;
@@ -181,9 +187,7 @@
     border:none;
     border-radius:12px;
     padding:14px;
-    font-family:'Noto Sans KR';
-    font-weight:700;
-    font-size:16px;
+    font-family:'Noto Sans KR'; font-weight:700; font-size:16px;
     cursor:pointer;
     box-shadow: 0 4px 0 var(--teal-dark);
     transition: transform .05s ease;
@@ -204,9 +208,7 @@
     pointer-events:none;
     opacity:0;
   }
-  .flying-note.go{
-    animation: dropIn 0.9s cubic-bezier(.5,0,.7,1) forwards;
-  }
+  .flying-note.go{ animation: dropIn 0.9s cubic-bezier(.5,0,.7,1) forwards; }
   @keyframes dropIn{
     0%{ opacity:1; transform:translate(-50%,0) scale(1) rotate(0deg); }
     70%{ opacity:1; transform:translate(-50%,-96px) scale(0.5) rotate(6deg); }
@@ -214,11 +216,8 @@
   }
 
   .stamp-wrap{
-    display:none;
-    flex-direction:column;
-    align-items:center;
-    text-align:center;
-    padding:30px 10px 10px;
+    display:none; flex-direction:column; align-items:center;
+    text-align:center; padding:30px 10px 10px;
   }
   .stamp-wrap.show{ display:flex; }
   .stamp{
@@ -227,22 +226,13 @@
     border-radius:50%;
     color:var(--stamp-red);
     display:flex; align-items:center; justify-content:center;
-    font-family:'Gaegu', cursive;
-    font-weight:700;
-    font-size:22px;
+    font-family:'Gaegu', cursive; font-weight:700; font-size:22px;
     transform:rotate(-10deg) scale(0.5);
     opacity:0;
     animation: stampIn .5s ease-out .15s forwards;
   }
-  @keyframes stampIn{
-    to{ transform:rotate(-10deg) scale(1); opacity:1; }
-  }
-  .stamp-msg{
-    margin-top:16px;
-    font-size:14px;
-    color:var(--ink-soft);
-    line-height:1.6;
-  }
+  @keyframes stampIn{ to{ transform:rotate(-10deg) scale(1); opacity:1; } }
+  .stamp-msg{ margin-top:16px; font-size:14px; color:var(--ink-soft); line-height:1.6; }
   .again-btn{
     margin-top:18px;
     background:none;
@@ -250,9 +240,7 @@
     color:var(--ink);
     border-radius:10px;
     padding:10px 18px;
-    font-family:'Noto Sans KR';
-    font-weight:700;
-    font-size:14px;
+    font-family:'Noto Sans KR'; font-weight:700; font-size:14px;
     cursor:pointer;
   }
 
@@ -272,9 +260,7 @@
   input[type=password]:focus, input[type=text]:focus{ border-color:var(--teal); }
   .err{ color:var(--stamp-red); font-size:13px; margin-top:8px; min-height:18px; }
 
-  .board-toolbar{
-    display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;
-  }
+  .board-toolbar{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
   .chip{
     border:1.5px solid #d8d0ba; background:#fff;
     border-radius:999px; padding:6px 12px;
@@ -282,14 +268,19 @@
     cursor:pointer;
   }
   .chip.active{ background:var(--ink); color:#fff; border-color:var(--ink); }
+  .chip .cdot{ display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:4px; vertical-align:1px; }
 
-  #boardList{
+  .press-hint{
+    font-size:12px; color:#9a927c; margin:2px 0 14px;
+  }
+
+  #boardList, #publicList{
     display:grid;
     grid-template-columns: 1fr;
     gap:14px;
   }
   @media (min-width: 640px){
-    #boardList{ grid-template-columns: 1fr 1fr; }
+    #boardList, #publicList{ grid-template-columns: 1fr 1fr; }
   }
   .note-card{
     background:#fffdf5;
@@ -297,7 +288,18 @@
     padding:16px 14px 14px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     position:relative;
+    border-left:5px solid transparent;
+    user-select:none;
+    -webkit-user-select:none;
+    -webkit-touch-callout:none;
   }
+  /* 상태별 카드 색상 */
+  .note-card.st-접수안됨{ border-left-color:var(--st-none); background:var(--st-none-bg); }
+  .note-card.st-논의중{ border-left-color:var(--st-discuss); background:var(--st-discuss-bg); }
+  .note-card.st-반려{ border-left-color:var(--st-reject); background:var(--st-reject-bg); }
+  .note-card.st-승인{ border-left-color:var(--st-approve); background:var(--st-approve-bg); }
+  .note-card.pressing{ transform:scale(0.97); transition:transform .3s ease; }
+
   .pin{
     width:14px; height:14px; border-radius:50%;
     background: radial-gradient(circle at 35% 30%, #ff8b7a, var(--stamp-red));
@@ -308,14 +310,41 @@
     display:inline-block;
     font-size:11.5px; font-weight:700;
     padding:3px 9px; border-radius:999px;
-    margin-bottom:8px;
+    margin-bottom:8px; margin-right:4px;
   }
   .note-tag.수업{ background:var(--cat-class); }
   .note-tag.시설{ background:var(--cat-facility); }
   .note-tag.교우관계{ background:var(--cat-peer); }
   .note-tag.기타{ background:var(--cat-etc); }
+  .status-tag{
+    display:inline-block;
+    font-size:11.5px; font-weight:700;
+    padding:3px 9px; border-radius:999px;
+    margin-bottom:8px;
+    color:#fff;
+  }
+  .status-tag.접수안됨{ background:var(--st-none); }
+  .status-tag.논의중{ background:var(--st-discuss); }
+  .status-tag.반려{ background:var(--st-reject); }
+  .status-tag.승인{ background:var(--st-approve); }
+
   .note-text{ font-size:14.5px; line-height:1.6; white-space:pre-wrap; }
   .note-time{ font-size:11.5px; color:#9a927c; margin-top:8px; }
+
+  .note-comment{
+    margin-top:10px;
+    background:rgba(255,255,255,0.75);
+    border:1.5px dashed #d8d0ba;
+    border-radius:8px;
+    padding:9px 11px;
+    font-size:13px; line-height:1.6;
+    white-space:pre-wrap;
+  }
+  .note-comment .who{
+    display:block;
+    font-size:11.5px; font-weight:700; color:var(--ink-soft);
+    margin-bottom:3px;
+  }
 
   .empty{
     grid-column: 1 / -1;
@@ -326,10 +355,62 @@
   .admin-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
   .small-link{ background:none;border:none; font-size:12.5px; color:var(--ink-soft); text-decoration:underline; cursor:pointer; }
 
+  /* ---- 상태 변경 모달 ---- */
+  .modal-bg{
+    position:fixed; inset:0;
+    background:rgba(34,51,84,0.45);
+    display:none;
+    align-items:center; justify-content:center;
+    padding:20px;
+    z-index:50;
+  }
+  .modal-bg.show{ display:flex; }
+  .modal{
+    background:var(--paper);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    width:100%; max-width:380px;
+    padding:22px 20px 18px;
+  }
+  .modal-title{ font-weight:900; font-size:16px; margin-bottom:4px; }
+  .modal-sub{ font-size:12.5px; color:var(--ink-soft); margin-bottom:14px; line-height:1.5; }
+  .status-btns{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+  .status-btn{
+    border:2px solid transparent;
+    border-radius:10px;
+    padding:11px 6px;
+    font-family:'Noto Sans KR'; font-weight:700; font-size:14px;
+    cursor:pointer; color:#fff;
+  }
+  .status-btn[data-st="접수안됨"]{ background:var(--st-none); }
+  .status-btn[data-st="논의중"]{ background:var(--st-discuss); }
+  .status-btn[data-st="반려"]{ background:var(--st-reject); }
+  .status-btn[data-st="승인"]{ background:var(--st-approve); }
+  .status-btn.selected{ border-color:var(--ink); transform:scale(1.03); }
+  #commentArea{ display:none; margin-bottom:12px; }
+  #commentArea.show{ display:block; }
+  #commentArea .field-label{ margin-top:0; }
+  #commentInput{ min-height:80px; }
+  .modal-actions{ display:flex; gap:8px; }
+  .modal-actions .cancel{
+    flex:1;
+    background:none; border:2px solid #d8d0ba; color:var(--ink-soft);
+    border-radius:10px; padding:11px;
+    font-family:'Noto Sans KR'; font-weight:700; font-size:14px; cursor:pointer;
+  }
+  .modal-actions .save{
+    flex:2;
+    background:var(--ink); border:none; color:#fff;
+    border-radius:10px; padding:11px;
+    font-family:'Noto Sans KR'; font-weight:700; font-size:14px; cursor:pointer;
+  }
+  .modal-actions .save:disabled{ opacity:0.5; cursor:default; }
+
   .toast{
     position:fixed; left:50%; bottom:24px; transform:translateX(-50%);
     background:var(--ink); color:#fff; padding:10px 18px; border-radius:999px;
     font-size:13px; opacity:0; pointer-events:none; transition:opacity .25s ease;
+    z-index:60;
   }
   .toast.show{ opacity:1; }
 </style>
@@ -346,31 +427,46 @@
   <div class="card" id="studentView">
     <div class="subtitle">이름은 남지 않아요. 편하게, 솔직하게 적어주세요.</div>
 
-    <div id="formArea">
-      <div class="slot-wrap"><div class="slot"></div></div>
+    <div class="stats-bar" id="studentStats"></div>
 
-      <div class="cat-label">어떤 이야기인가요?</div>
-      <div class="cats" id="cats">
-        <button class="cat-btn" data-cat="수업">📚 수업</button>
-        <button class="cat-btn" data-cat="시설">🏫 시설</button>
-        <button class="cat-btn" data-cat="교우관계">🧑‍🤝‍🧑 교우관계</button>
-        <button class="cat-btn" data-cat="기타">✏️ 기타</button>
-      </div>
-
-      <textarea id="noteText" maxlength="400" placeholder="여기에 편하게 적어주세요..."></textarea>
-      <div class="helper-row">
-        <span>건설적인 의견일수록 더 잘 반영돼요 🙂</span>
-        <span id="charCount">0/400</span>
-      </div>
-
-      <button class="submit-btn" id="submitBtn">쪽지 보내기</button>
-      <div class="flying-note" id="flyingNote"></div>
+    <div class="student-tabs">
+      <button class="stab active" id="tabWrite">✏️ 제보하기</button>
+      <button class="stab" id="tabBoard">📋 답변 게시판</button>
     </div>
 
-    <div class="stamp-wrap" id="stampWrap">
-      <div class="stamp">접수<br>완료</div>
-      <div class="stamp-msg">쪽지가 잘 도착했어요.<br>말해줘서 고마워요.</div>
-      <button class="again-btn" id="againBtn">제보 하나 더 남기기</button>
+    <div id="writeSection">
+      <div id="formArea">
+        <div class="slot-wrap"><div class="slot"></div></div>
+
+        <div class="cat-label">어떤 이야기인가요?</div>
+        <div class="cats" id="cats">
+          <button class="cat-btn" data-cat="수업">📚 수업</button>
+          <button class="cat-btn" data-cat="시설">🏫 시설</button>
+          <button class="cat-btn" data-cat="교우관계">🧑‍🤝‍🧑 교우관계</button>
+          <button class="cat-btn" data-cat="기타">✏️ 기타</button>
+        </div>
+
+        <textarea id="noteText" maxlength="400" placeholder="여기에 편하게 적어주세요..."></textarea>
+        <div class="helper-row">
+          <span>건설적인 의견일수록 더 잘 반영돼요 🙂</span>
+          <span id="charCount">0/400</span>
+        </div>
+
+        <button class="submit-btn" id="submitBtn">쪽지 보내기</button>
+        <div class="flying-note" id="flyingNote"></div>
+      </div>
+
+      <div class="stamp-wrap" id="stampWrap">
+        <div class="stamp">접수<br>완료</div>
+        <div class="stamp-msg">쪽지가 잘 도착했어요.<br>말해줘서 고마워요.</div>
+        <button class="again-btn" id="againBtn">제보 하나 더 남기기</button>
+      </div>
+    </div>
+
+    <!-- 학생용 답변 게시판 (반려/승인된 제보만 공개) -->
+    <div id="boardSection" style="display:none;">
+      <div class="subtitle" style="margin-bottom:14px;">원장님이 답변한 제보들이에요. (승인/반려된 것만 보여요)</div>
+      <div id="publicList"></div>
     </div>
   </div>
 
@@ -393,6 +489,9 @@
       <div class="subtitle" style="margin:0;">도착한 쪽지들</div>
       <button class="small-link" id="logoutBtn">잠그기</button>
     </div>
+
+    <div class="stats-bar" id="adminStats"></div>
+
     <div class="board-toolbar" id="filterChips">
       <button class="chip active" data-filter="전체">전체</button>
       <button class="chip" data-filter="수업">수업</button>
@@ -400,6 +499,15 @@
       <button class="chip" data-filter="교우관계">교우관계</button>
       <button class="chip" data-filter="기타">기타</button>
     </div>
+    <div class="board-toolbar" id="statusChips">
+      <button class="chip active" data-status="전체">전체</button>
+      <button class="chip" data-status="접수안됨"><span class="cdot" style="background:var(--st-none)"></span>접수안됨</button>
+      <button class="chip" data-status="논의중"><span class="cdot" style="background:var(--st-discuss)"></span>논의중</button>
+      <button class="chip" data-status="반려"><span class="cdot" style="background:var(--st-reject)"></span>반려</button>
+      <button class="chip" data-status="승인"><span class="cdot" style="background:var(--st-approve)"></span>승인</button>
+    </div>
+    <div class="press-hint">💡 쪽지를 <b>꾹 누르면</b> 상태를 바꿀 수 있어요</div>
+
     <div id="boardList"></div>
     <div style="text-align:center; margin-top:10px;">
       <button class="small-link" id="changePwBtn">비밀번호 바꾸기</button>
@@ -408,16 +516,47 @@
 
 </div>
 
+<!-- 상태 변경 모달 -->
+<div class="modal-bg" id="statusModal">
+  <div class="modal">
+    <div class="modal-title">상태 변경</div>
+    <div class="modal-sub" id="modalPreview"></div>
+    <div class="status-btns" id="statusBtns">
+      <button class="status-btn" data-st="접수안됨">접수안됨</button>
+      <button class="status-btn" data-st="논의중">논의중</button>
+      <button class="status-btn" data-st="반려">반려</button>
+      <button class="status-btn" data-st="승인">승인</button>
+    </div>
+    <div id="commentArea">
+      <div class="field-label">원장님 코멘트 (학생들에게 공개돼요)</div>
+      <textarea id="commentInput" maxlength="300" placeholder="이 제보에 대한 답변을 적어주세요..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="cancel" id="modalCancel">취소</button>
+      <button class="save" id="modalSave">저장</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 // ⚠️ 배포한 Apps Script 웹 앱 URL을 여기에 붙여넣으세요
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6hZHOP9VpE9c544hvxF3k4xUld5MCjY0cky2anZMO9U-5gGZQ_hzPa1OC2cN0OA0V/exec";
+const APPS_SCRIPT_URL = "여기에_배포된_웹앱_URL을_붙여넣으세요";
+
+const STATUSES = ["접수안됨", "논의중", "반려", "승인"];
+const STATUS_COLORS = {
+  "접수안됨": "var(--st-none)",
+  "논의중": "var(--st-discuss)",
+  "반려": "var(--st-reject)",
+  "승인": "var(--st-approve)"
+};
 
 let selectedCat = null;
-let submissions = [];
-let currentFilter = "전체";
-let adminPw = ""; // 로그인 성공 시 세션 동안만 기억 (저장하지 않음)
+let submissions = [];          // 관리자용 전체 목록
+let currentFilter = "전체";     // 카테고리 필터
+let currentStatusFilter = "전체"; // 상태 필터
+let adminPw = "";              // 로그인 성공 시 세션 동안만 기억
 
 function urlReady(){
   return APPS_SCRIPT_URL && APPS_SCRIPT_URL.startsWith("http");
@@ -440,7 +579,100 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'), 2200);
 }
 
-// ---------- 학생 화면 ----------
+function formatTime(iso){
+  const d = new Date(iso);
+  if(isNaN(d)) return iso;
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// ---------- 현황 통계 바 ----------
+function renderStats(containerId, counts){
+  const el = document.getElementById(containerId);
+  if(!counts){ el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <span class="stat-pill total">전체 <span class="num">${counts["전체"] || 0}</span></span>
+    ${STATUSES.map(st => `
+      <span class="stat-pill">
+        <span class="sdot ${st}"></span>${st} <span class="num">${counts[st] || 0}</span>
+      </span>
+    `).join('')}
+  `;
+}
+
+// ---------- 학생 화면: 탭 전환 ----------
+document.getElementById('tabWrite').addEventListener('click', ()=>{
+  document.getElementById('tabWrite').classList.add('active');
+  document.getElementById('tabBoard').classList.remove('active');
+  document.getElementById('writeSection').style.display = 'block';
+  document.getElementById('boardSection').style.display = 'none';
+});
+document.getElementById('tabBoard').addEventListener('click', ()=>{
+  document.getElementById('tabBoard').classList.add('active');
+  document.getElementById('tabWrite').classList.remove('active');
+  document.getElementById('writeSection').style.display = 'none';
+  document.getElementById('boardSection').style.display = 'block';
+  loadPublicBoard();
+});
+
+// ---------- 학생 화면: 공개 게시판 + 통계 ----------
+async function loadPublicBoard(){
+  if(!urlReady()) return;
+  const list = document.getElementById('publicList');
+  list.innerHTML = `<div class="empty">불러오는 중...</div>`;
+  try{
+    const result = await apiGet({ action: 'publicList' });
+    renderStats('studentStats', result.counts);
+    const data = result.data || [];
+    if(data.length === 0){
+      list.innerHTML = `<div class="empty">아직 답변된 제보가 없어요.<br>원장님이 검토 중이에요!</div>`;
+      return;
+    }
+    list.innerHTML = data.map(() => `
+      <div class="note-card">
+        <div class="pin"></div>
+        <span class="cat-slot"></span>
+        <span class="status-slot"></span>
+        <div class="note-text"></div>
+        <div class="comment-slot"></div>
+        <div class="note-time"></div>
+      </div>
+    `).join('');
+    const cards = list.querySelectorAll('.note-card');
+    data.forEach((s, i)=>{
+      const card = cards[i];
+      card.classList.add('st-' + s.status);
+      card.querySelector('.cat-slot').outerHTML = `<span class="note-tag ${s.cat}">${s.cat}</span>`;
+      card.querySelector('.status-slot').outerHTML = `<span class="status-tag ${s.status}">${s.status === '승인' ? '✅ 승인' : '❌ 반려'}</span>`;
+      card.querySelector('.note-text').textContent = s.text;
+      const cSlot = card.querySelector('.comment-slot');
+      if(s.comment){
+        cSlot.className = 'note-comment';
+        const who = document.createElement('span');
+        who.className = 'who';
+        who.textContent = '💬 원장님 답변';
+        cSlot.appendChild(who);
+        cSlot.appendChild(document.createTextNode(s.comment));
+      }else{
+        cSlot.remove();
+      }
+      card.querySelector('.note-time').textContent = formatTime(s.ts);
+    });
+  }catch(e){
+    list.innerHTML = `<div class="empty">불러오지 못했어요.<br>잠시 후 다시 시도해주세요.</div>`;
+  }
+}
+
+// 첫 진입 시 학생 통계만 조용히 로드
+async function loadStudentStats(){
+  if(!urlReady()) return;
+  try{
+    const result = await apiGet({ action: 'publicList' });
+    renderStats('studentStats', result.counts);
+  }catch(e){ /* 통계는 실패해도 조용히 넘어감 */ }
+}
+
+// ---------- 학생 화면: 제보 작성 ----------
 document.querySelectorAll('.cat-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
@@ -479,6 +711,7 @@ document.getElementById('submitBtn').addEventListener('click', async ()=>{
   setTimeout(()=>{
     document.getElementById('formArea').style.display = 'none';
     document.getElementById('stampWrap').classList.add('show');
+    loadStudentStats();
   }, 700);
 });
 
@@ -560,21 +793,31 @@ document.getElementById('changePwBtn').addEventListener('click', async ()=>{
   }
 });
 
-// ---------- 게시판 렌더 ----------
+// ---------- 관리자: 필터 ----------
 document.getElementById('filterChips').addEventListener('click', (e)=>{
   const btn = e.target.closest('.chip');
   if(!btn) return;
-  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('#filterChips .chip').forEach(c=>c.classList.remove('active'));
   btn.classList.add('active');
   currentFilter = btn.dataset.filter;
   renderBoard();
 });
+document.getElementById('statusChips').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.chip');
+  if(!btn) return;
+  document.querySelectorAll('#statusChips .chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  currentStatusFilter = btn.dataset.status;
+  renderBoard();
+});
 
+// ---------- 관리자: 게시판 로드/렌더 ----------
 async function loadBoard(){
   document.getElementById('boardList').innerHTML = `<div class="empty">불러오는 중...</div>`;
   try{
     const result = await apiGet({ action: 'list', pw: adminPw });
     submissions = result.data || [];
+    renderStats('adminStats', result.counts);
   }catch(e){
     document.getElementById('boardList').innerHTML = `<div class="empty">불러오지 못했어요.<br>잠시 후 다시 시도해주세요.</div>`;
     return;
@@ -582,36 +825,151 @@ async function loadBoard(){
   renderBoard();
 }
 
-function formatTime(iso){
-  const d = new Date(iso);
-  if(isNaN(d)) return iso;
-  const pad = n => String(n).padStart(2,'0');
-  return `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
 function renderBoard(){
   const list = document.getElementById('boardList');
-  const filtered = currentFilter === '전체' ? submissions : submissions.filter(s=>s.cat===currentFilter);
+  let filtered = currentFilter === '전체' ? submissions : submissions.filter(s=>s.cat===currentFilter);
+  if(currentStatusFilter !== '전체'){
+    filtered = filtered.filter(s => (s.status || '접수안됨') === currentStatusFilter);
+  }
   if(filtered.length === 0){
-    list.innerHTML = `<div class="empty">아직 도착한 쪽지가 없어요.<br>QR코드를 스캔하면 여기로 모여요.</div>`;
+    list.innerHTML = `<div class="empty">조건에 맞는 쪽지가 없어요.</div>`;
     return;
   }
   list.innerHTML = filtered.map(s => `
-    <div class="note-card">
+    <div class="note-card st-${s.status || '접수안됨'}" data-id="${s.id}">
       <div class="pin"></div>
       <span class="note-tag ${s.cat}">${s.cat}</span>
+      <span class="status-tag ${s.status || '접수안됨'}">${s.status || '접수안됨'}</span>
       <div class="note-text"></div>
+      <div class="comment-slot"></div>
       <div class="note-time">${formatTime(s.ts)}</div>
     </div>
   `).join('');
   // 텍스트는 XSS 방지를 위해 textContent로 안전하게 주입
   const cards = list.querySelectorAll('.note-card');
   filtered.forEach((s, i)=>{
-    cards[i].querySelector('.note-text').textContent = s.text;
+    const card = cards[i];
+    card.querySelector('.note-text').textContent = s.text;
+    const cSlot = card.querySelector('.comment-slot');
+    if(s.comment){
+      cSlot.className = 'note-comment';
+      const who = document.createElement('span');
+      who.className = 'who';
+      who.textContent = '💬 원장님 코멘트';
+      cSlot.appendChild(who);
+      cSlot.appendChild(document.createTextNode(s.comment));
+    }else{
+      cSlot.remove();
+    }
+    attachLongPress(card, s);
   });
 }
 
+// ---------- 관리자: 꾹 눌러 상태 변경 ----------
+const LONG_PRESS_MS = 550;
+
+function attachLongPress(card, submission){
+  let timer = null;
+  let startX = 0, startY = 0;
+
+  const start = (x, y)=>{
+    startX = x; startY = y;
+    card.classList.add('pressing');
+    timer = setTimeout(()=>{
+      timer = null;
+      card.classList.remove('pressing');
+      openStatusModal(submission);
+    }, LONG_PRESS_MS);
+  };
+  const cancel = ()=>{
+    card.classList.remove('pressing');
+    if(timer){ clearTimeout(timer); timer = null; }
+  };
+
+  card.addEventListener('pointerdown', e => start(e.clientX, e.clientY));
+  card.addEventListener('pointerup', cancel);
+  card.addEventListener('pointerleave', cancel);
+  card.addEventListener('pointercancel', cancel);
+  card.addEventListener('pointermove', e=>{
+    if(timer && (Math.abs(e.clientX-startX) > 12 || Math.abs(e.clientY-startY) > 12)) cancel();
+  });
+  card.addEventListener('contextmenu', e => e.preventDefault()); // 모바일 길게누름 메뉴 방지
+}
+
+// ---------- 상태 변경 모달 ----------
+let modalTarget = null;   // 현재 대상 제보
+let modalStatus = null;   // 선택된 상태
+
+function openStatusModal(submission){
+  modalTarget = submission;
+  modalStatus = submission.status || '접수안됨';
+  const preview = submission.text.length > 60 ? submission.text.slice(0, 60) + '…' : submission.text;
+  document.getElementById('modalPreview').textContent = `"${preview}"`;
+  document.querySelectorAll('.status-btn').forEach(b=>{
+    b.classList.toggle('selected', b.dataset.st === modalStatus);
+  });
+  document.getElementById('commentInput').value = submission.comment || '';
+  updateCommentVisibility();
+  document.getElementById('statusModal').classList.add('show');
+}
+
+function closeStatusModal(){
+  document.getElementById('statusModal').classList.remove('show');
+  modalTarget = null;
+}
+
+function updateCommentVisibility(){
+  const needsComment = (modalStatus === '반려' || modalStatus === '승인');
+  document.getElementById('commentArea').classList.toggle('show', needsComment);
+}
+
+document.getElementById('statusBtns').addEventListener('click', (e)=>{
+  const btn = e.target.closest('.status-btn');
+  if(!btn) return;
+  modalStatus = btn.dataset.st;
+  document.querySelectorAll('.status-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  updateCommentVisibility();
+});
+
+document.getElementById('modalCancel').addEventListener('click', closeStatusModal);
+document.getElementById('statusModal').addEventListener('click', (e)=>{
+  if(e.target === document.getElementById('statusModal')) closeStatusModal();
+});
+
+document.getElementById('modalSave').addEventListener('click', async ()=>{
+  if(!modalTarget || !modalStatus) return;
+  const needsComment = (modalStatus === '반려' || modalStatus === '승인');
+  const comment = needsComment ? document.getElementById('commentInput').value.trim() : '';
+  if(needsComment && !comment){
+    if(!confirm('코멘트 없이 저장할까요? 학생들에게는 상태만 보여요.')) return;
+  }
+  const saveBtn = document.getElementById('modalSave');
+  saveBtn.disabled = true;
+  try{
+    const result = await apiPost({
+      action: 'setStatus',
+      pw: adminPw,
+      id: modalTarget.id,
+      status: modalStatus,
+      comment: comment
+    });
+    if(result.ok){
+      showToast('상태가 변경됐어요');
+      closeStatusModal();
+      await loadBoard(); // 목록 + 통계 새로고침
+    }else{
+      showToast('변경에 실패했어요. 다시 시도해주세요');
+    }
+  }catch(e){
+    showToast('서버에 연결할 수 없어요');
+  }
+  saveBtn.disabled = false;
+});
+
+// ---------- 초기화 ----------
 goStudent();
+loadStudentStats();
 </script>
 </body>
 </html>
